@@ -56,10 +56,6 @@ void thread_lib::print_info(thread_info thread_object) {
 
 }
 
-void empty_fn(int a) {
-	cout << "Test " << a << endl;
-}
-
 void thread_lib::run_workload(thread_info thread_object, thread threads[]) {
 
 	for (int i = 0; i < thread_object.amount; i++) {

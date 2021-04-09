@@ -1,35 +1,36 @@
 #include "workload.hpp"
+#include <chrono>
 
 void workload1() {
-	cout << "Workload 1" << endl;
+	cout << "Workload 1";
 }
 
 void workload2() {
-	cout << "Workload 2" << endl;
+	cout << "Workload 2";
 }
 
 void workload3() {
-	cout << "Workload 3" << endl;
+	cout << "Workload 3";
 }
 
 void workload4() {
-	cout << "Workload 4" << endl;
+	cout << "Workload 4";
 }
 
 void workload5() {
-	cout << "Workload 5" << endl;
+	cout << "Workload 5";
 }
 
 void workload6() {
-	cout << "Workload 6" << endl;
+	cout << "Workload 6";
 }
 
 void workload7() {
-	cout << "Workload 7" << endl;
+	cout << "Workload 7";
 }
 
 void workload8() {
-	cout << "Workload 8" << endl;
+	cout << "Workload 8";
 }
 
 void workload_selector(int index) {

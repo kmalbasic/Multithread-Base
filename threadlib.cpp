@@ -4,6 +4,7 @@
 #include <intrin.h>
 #include "threadlib.hpp"
 #include "workload.hpp"
+#include "simplified_fn.hpp"
 
 using namespace std;
 
@@ -27,14 +28,42 @@ std::string thread_lib::get_cpu_name()
 			memcpy(cpu_string + 32, cpu_information, sizeof(cpu_information));
 	}
 	return cpu_string;
+
 }
 
 int thread_lib::calculate_threads() {
+
 	SYSTEM_INFO system_info;
 	GetSystemInfo(&system_info);
 	int threads = system_info.dwNumberOfProcessors; // cores
 	return threads;
 	//thread* available_threads = new thread[cores];
+
+}
+
+int thread_lib::set_custom_affinity() {
+	cout << "[debug] do you wish to set custom affinity of this process? Y/N";
+	char ans;
+	cin >> ans;
+	if (ans == 'Y') {
+		int custom_aff;
+		cin >> custom_aff;
+		return custom_aff;
+	}
+	else
+	{
+		return thread_lib::calculate_threads();
+	}
+
+}
+
+int thread_lib::calculate_affinity_req(int threads) {
+
+	cout << "debug -> threads = " << threads << endl;
+
+	int sqr = threads - 1;
+
+	return pow(2, sqr) * 2 - 1;
 }
 
 thread_info thread_lib::initialize_info() {
@@ -49,6 +78,16 @@ thread_info thread_lib::initialize_info() {
 
 }
 
+void thread_lib::assign_fix(int i) {
+#ifdef _DEBUG
+	auto result = smpl::get_execution_time(workload_selector, i);
+	std::cout << " -> [debug] " << result << " microseconds." << std::endl;
+	return;
+#endif
+	workload_selector(i);
+
+}
+
 void thread_lib::print_info(thread_info thread_object) {
 
 	cout << "[*] CPU name: " << thread_object.cpu_name << endl;
@@ -56,11 +95,25 @@ void thread_lib::print_info(thread_info thread_object) {
 
 }
 
-void thread_lib::run_workload(thread_info thread_object, thread threads[]) {
+void empty_fn(int a) {
+
+	cout << "Test " << a << endl;
+
+}
+
+void thread_lib::run_workload(thread_info thread_object, thread threads[], bool custom_affinity) {
+#ifdef _DEBUG
+	if (custom_affinity)
+	{;
+		int affinity_req = thread_lib::calculate_affinity_req(thread_lib::set_custom_affinity());
+		cout << "[debug] affinity_req = " << affinity_req << endl;
+		::SetProcessAffinityMask(GetCurrentProcess(), affinity_req);
+	} //0xf);
+#endif
 
 	for (int i = 0; i < thread_object.amount; i++) {
 
-		threads[i] = thread(workload_selector, i);
+		threads[i] = thread(assign_fix, i);
 		threads[i].join();
 
 	}

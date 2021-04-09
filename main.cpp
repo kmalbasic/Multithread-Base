@@ -13,6 +13,7 @@ int main()
     thread* threads = new thread[thread_information.amount];
     
     thread_lib::print_info(thread_information);
+    
 #ifdef _DEBUG
 
     thread_lib::run_workload(thread_information, threads, true);

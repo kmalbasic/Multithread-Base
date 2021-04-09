@@ -17,14 +17,14 @@ int main()
 #ifdef _DEBUG
 
     thread_lib::run_workload(thread_information, threads, true);
-    Sleep(10000);
+    Sleep(10000);  // added for testing since there is almost 0 load and operations execute quickly
 
     return 0;
 
 #endif
     
     thread_lib::run_workload(thread_information, threads, false);
-    Sleep(10000);
+    Sleep(10000);   // added for testing since there is almost 0 load and operations execute quickly
 
     return 0;
 

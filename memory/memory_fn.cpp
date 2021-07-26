@@ -69,3 +69,29 @@ void memory::write_memory(DWORD address, t buffer)
 {
 	WriteProcessMemory(this->process_handle, (LPVOID)address, &buffer, sizeof(t), NULL);
 }
+
+bool memory::memcmp(const BYTE* data, const BYTE* mask, const char* mask_str) {
+	for (; *mask_str; ++mask_str, ++data, ++mask) {
+		if (*mask_str == 'x' && *data != *mask) {
+			return false;
+		}
+	}
+	return (*mask_str == NULL);
+}
+
+DWORD memory::find_signature(DWORD start, DWORD size, const char* sig, const char* mask)
+{
+	BYTE* data = new BYTE[size];
+	SIZE_T read_bytes;
+
+	memory::read_memory(TargetProcess, (LPVOID)start, data, size, &read_bytes);
+
+	for (DWORD i = 0; i < size; i++)
+	{
+		if (MemoryCompare((const BYTE*)(data + i), (const BYTE*)sig, mask)) {
+			return start + i;
+		}
+	}
+	delete[] data;
+	return NULL;
+}

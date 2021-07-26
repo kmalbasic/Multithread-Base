@@ -18,4 +18,7 @@ namespace memory {
 	template <typename t>
 	void write_memory(DWORD address, t value);
 
+	bool memcmp(const BYTE* data, const BYTE* mask, const char* mask_str);
+	DWORD find_signature(DWORD start, DWORD size, const char* sig, const char* mask);
+
 }

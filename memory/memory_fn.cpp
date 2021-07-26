@@ -88,7 +88,7 @@ DWORD memory::find_signature(DWORD start, DWORD size, const char* sig, const cha
 
 	for (DWORD i = 0; i < size; i++)
 	{
-		if (MemoryCompare((const BYTE*)(data + i), (const BYTE*)sig, mask)) {
+		if (memory::memcmp((const BYTE*)(data + i), (const BYTE*)sig, mask)) {
 			return start + i;
 		}
 	}

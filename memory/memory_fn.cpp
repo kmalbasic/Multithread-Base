@@ -1,4 +1,5 @@
 #include "memory_fn.hpp"
+#include "../simplified_fn/simplified_fn.hpp"
 
 /*
 	HUGE NOTE: Do not use these functions if you are using any sort of anticheating software. You will be instantly flagged/banned.
@@ -8,7 +9,9 @@
 	vulnerable and unsigned drivers (as well as the method of mapping those drivers), so use it with caution.
 */
 
-bool memory::attach(const char* process_name, DWORD access_rights) {
+
+
+HANDLE memory::attach(const char* process_name, DWORD access_rights) {
 
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 	HANDLE process_handle = NULL;
@@ -21,13 +24,13 @@ bool memory::attach(const char* process_name, DWORD access_rights) {
 
 		// conversion in case you want to use unicode instead of multibyte character set
 		char w_to_c[256];
-		sprintf_s(w_to_c, "%ws", pe.szExeFile);
+		//sprintf_s(w_to_c, "%ws", pe.szExeFile);
 
 		if (Process32First(snapshot, &pe))
 		{
 			do
 			{
-				if (!strcmp(w_to_c, process_name)) // w_to_c = szExeFile
+				if (!strcmp(pe.szExeFile, process_name)) // w_to_c = szExeFile
 				{
 					process_handle = OpenProcess(access_rights, false, pe.th32ProcessID);
 				}
@@ -41,11 +44,11 @@ bool memory::attach(const char* process_name, DWORD access_rights) {
 
 	if (process_handle) 
 	{ 
-		return true; 
+		return process_handle;
 	}
 	else 
 	{ 
-		return false; 
+		return 0;
 	}
 
 }
@@ -57,17 +60,17 @@ bool memory::detach(HANDLE h) {
 }
 
 template<typename t>
-inline t memory::read_memory(DWORD address)
+inline t memory::read_memory(DWORD address, process Process)
 {
 	t buffer;
-	ReadProcessMemory(this->process_handle, (LPCVOID)address, &buffer, sizeof(t), NULL);
+	ReadProcessMemory(Process.process_handle, (LPCVOID)address, &buffer, sizeof(t), NULL);
 	return buffer;
 }
 
 template<typename t>
-void memory::write_memory(DWORD address, t buffer)
+void memory::write_memory(DWORD address, t buffer, HANDLE process)
 {
-	WriteProcessMemory(this->process_handle, (LPVOID)address, &buffer, sizeof(t), NULL);
+	WriteProcessMemory(process, (LPVOID)address, &buffer, sizeof(t), NULL);
 }
 
 bool memory::memcmp(const BYTE* data, const BYTE* mask, const char* mask_str) {
@@ -79,12 +82,12 @@ bool memory::memcmp(const BYTE* data, const BYTE* mask, const char* mask_str) {
 	return (*mask_str == NULL);
 }
 
-DWORD memory::find_signature(DWORD start, DWORD size, const char* sig, const char* mask)
+DWORD memory::find_signature(DWORD start, DWORD size, const char* sig, const char* mask, process Process)
 {
 	BYTE* data = new BYTE[size];
 	SIZE_T read_bytes;
 
-	memory::read_memory(TargetProcess, (LPVOID)start, data, size, &read_bytes);
+	ReadProcessMemory(Process.process_handle, (LPVOID)start, data, size, &read_bytes);
 
 	for (DWORD i = 0; i < size; i++)
 	{
@@ -93,5 +96,58 @@ DWORD memory::find_signature(DWORD start, DWORD size, const char* sig, const cha
 		}
 	}
 	delete[] data;
-	return NULL;
+	return 0;
+}
+
+void memory::inject_shell( char shellcode[], const char* process_name) {
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+	HANDLE process_handle = NULL;
+	process info;
+
+	if (snapshot)
+	{
+		PROCESSENTRY32 pe;
+		pe.dwSize = sizeof(PROCESSENTRY32);
+		wchar_t text_wchar[30];
+
+		// conversion in case you want to use unicode instead of multibyte character set
+		char w_to_c[256];
+		//sprintf_s(w_to_c, "%ws", pe.szExeFile);
+
+		if (Process32First(snapshot, &pe))
+		{
+			do
+			{
+				// std::cout << "pe.szExeFile: " << pe.szExeFile << std::endl;    --    debuggin' stuff
+				if (!strcmp(pe.szExeFile, process_name)) // w_to_c = szExeFile
+				{
+					std::cout << "[+] pe.szExeFile: " << pe.szExeFile << " -- FOUND " << std::endl;
+					process_handle = OpenProcess(PROCESS_ALL_ACCESS, false, pe.th32ProcessID);
+				}
+				
+			} while (Process32Next(snapshot, &pe));
+		}
+		CloseHandle(snapshot);
+	}
+	if (!process_handle) {
+		std::cout << "Invalid process_handle" << std::endl;
+		return;
+	}
+	DWORD ptr_alloc;
+	ptr_alloc = reinterpret_cast<DWORD>(VirtualAllocEx(process_handle, 0, sizeof(shellcode), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+
+	if (ptr_alloc == 0) {
+		std::cout << "Error while injecting shellcode. Couldn't retrieve the base address." << std::endl;
+		smpl::sleep_sec(10);
+		return;
+	}
+
+	DWORD lpd_shit = 0x50002;
+	WriteProcessMemory(ptr_alloc, shellcode, process_handle);
+	std::cout << "Successfully injected shellcode into the selected process." << std::endl;
+	CreateRemoteThread(process_handle, 0, 100, (LPTHREAD_START_ROUTINE)ptr_alloc, 0, 0, &lpd_shit);
+
+	memory::detach(process_handle);
+
 }

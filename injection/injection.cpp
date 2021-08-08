@@ -189,6 +189,8 @@ void inject::load_lib(const char* process_name, const char* dll_name) {
 
 }
 
+// small typo above 
+
 #define RELOC_FLAG32(RelInfo) ((RelInfo >> 0x0C) == IMAGE_REL_BASED_HIGHLOW)
 #define RELOC_FLAG64(RelInfo) ((RelInfo >> 0x0C) == IMAGE_REL_BASED_DIR64)
 

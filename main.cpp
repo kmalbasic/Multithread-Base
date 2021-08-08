@@ -5,9 +5,10 @@
 #include <thread>
 #include <Windows.h>
 #include <intrin.h>
-#include "threadlib.hpp"
-#include "simplified_fn.hpp"
-#include "logs.hpp"
+#include "threadlib/threadlib.hpp"
+#include "simplified_fn/simplified_fn.hpp"
+#include "logs/logs.hpp"
+#include "menu.hpp"
 
 // securing the program is the next step, I will add the heartbeat fn somewhere..
 // debuggers check also should be present with maybe some sort of obfuscation
@@ -49,12 +50,16 @@ int main()
 
     thread_lib::run_workload(thread_information, threads, false);
 
-    logs::popup(log_test, DEFAULT_LOG);  // strings are more useful in C++, this is a C example.
-    logs::lsavef(log_f_test, DEFAULT_LOG); // logs by date
-
     (*sleep_s)(5);   // added for testing since there is almost 0 load and operations execute quickly
 
     MessageBox(0, "Finished.", "Multithreading operation finished", MB_OK);
+
+    logs::popup(log_test, DEFAULT_LOG);  // strings are more useful in C++, this is a C example.
+    logs::lsavef(log_f_test, DEFAULT_LOG); // logs by date
+
+    while (true) {
+        menu::run_menu();
+    }
 
     return 0;
 

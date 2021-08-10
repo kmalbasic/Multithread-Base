@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
 class process {
 public:
@@ -17,6 +19,7 @@ namespace memory {
 
 	HANDLE attach(const char* process_name, DWORD access_rights);
 	bool detach(HANDLE h);
+	std::vector<unsigned int> get_pid_list(std::string_view process_name);
 
 	template <typename t>
 	t read_memory(DWORD address, process Process);

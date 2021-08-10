@@ -1,10 +1,11 @@
 #include<iostream>
 #include<Windows.h>
 #include "menu.hpp"
-#include "simplified_fn/simplified_fn.hpp"
-#include "threadlib/threadlib.hpp"
-#include "memory/memory_fn.hpp"
-#include "injection/injection.hpp"
+#include "../simplified_fn/simplified_fn.hpp"
+#include "../threadlib/threadlib.hpp"
+#include "../memory/memory_fn.hpp"
+#include "../injection/injection.hpp"
+#include "../overlay/overlay.hpp"
 
 using namespace std;
 
@@ -61,6 +62,24 @@ bool menu::select_options() {
 	}
 
 	if (cmd == "5") {
+		char window_title[64];
+		string program_name;
+		cout << "[?] Enter the window title (D3D): ";
+		cin.getline(window_title,30);
+		cout << "[?] Enter the program name: ";
+		cin.getline(window_title, 64);
+
+		hijack* hijack_obj = &hijack();
+
+		HWND hijacked_hwnd = hijack_obj->hijack_ol("notepad.exe", "Notepad", window_title);
+		overlay* overlay_obj = &overlay(hijacked_hwnd);
+
+		if (overlay_obj->InitiateD3D(hijack_obj->c_window_size_x, hijack_obj->c_window_size_y))
+			overlay_obj->StartRender(hijack_obj->overlay_string, window_title);
+		return true;
+	}
+
+	if (cmd == "6") {
 		exit(EXIT_SUCCESS);
 		return true;
 	}
@@ -80,7 +99,8 @@ void menu::run_menu() {
 	cout << "[2] Run LoadLibrary injection tool." << endl;
 	cout << "[3] Run PE manualmap tool." << endl;
 	cout << "[4] Inject shellcode into a certain process." << endl;
-	cout << "[5] Exit" << endl;
+	cout << "[5] Hijack a process and run an overlay." << endl;
+	cout << "[6] Exit" << endl;
 	smpl::spacer();
 	if (!menu::select_options()) {
 		cout << "[X] Wrong options selected or there was an error while performing the operation. Try again." << endl;

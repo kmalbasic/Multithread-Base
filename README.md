@@ -16,6 +16,7 @@ game hacking.
 - Threading library
 - Injection of DLL files (loadlibrary and manualmap, shellcode injection included with only flaw being hardcoded shellcode)
 - Logging system 
+- Overlay for drawing stuff (borderless/fullscreen windowed)
 - Some simplified function wrappers (mostly easy learning stuff for people like function pointers etc.)
 
 # Future updates

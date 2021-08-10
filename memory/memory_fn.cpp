@@ -59,6 +59,26 @@ bool memory::detach(HANDLE h) {
 
 }
 
+std::vector<unsigned int> memory::get_pid_list(std::string_view process_name)
+{
+	std::vector<unsigned int> process_list;
+	HANDLE handle_to_pid = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	PROCESSENTRY32 entry;
+	entry.dwSize = sizeof(entry);
+	do
+	{
+		if (!strcmp(entry.szExeFile, process_name.data()))
+		{
+			process_list.push_back(entry.th32ProcessID);
+			CloseHandle(handle_to_pid);
+		}
+
+	} while (Process32Next(handle_to_pid, &entry));
+
+	return process_list;
+}
+
+
 template<typename t>
 inline t memory::read_memory(DWORD address, process Process)
 {
@@ -144,7 +164,7 @@ void memory::inject_shell( char shellcode[], const char* process_name) {
 	}
 
 	DWORD lpd_shit = 0x50002;
-	WriteProcessMemory(ptr_alloc, shellcode, process_handle);
+	memory::write_memory(ptr_alloc, shellcode, process_handle);
 	std::cout << "Successfully injected shellcode into the selected process." << std::endl;
 	CreateRemoteThread(process_handle, 0, 100, (LPTHREAD_START_ROUTINE)ptr_alloc, 0, 0, &lpd_shit);
 

@@ -1,6 +1,7 @@
 #include "overlay.hpp"
 #include "../injection/injection.hpp"
 #include "../memory/memory_fn.hpp"
+#include "../render/render.hpp"
 
 
 hijack::hijack()
@@ -206,6 +207,8 @@ void overlay::StartRender(std::string_view to_draw_on, std::string_view game_win
 		MSG message;
 		message.message = WM_NULL;
 
+		
+
 		if (PeekMessage(&message, this->draw_window, NULL, NULL, PM_REMOVE))
 		{
 			TranslateMessage(&message);
@@ -238,6 +241,9 @@ void overlay::StartRender(std::string_view to_draw_on, std::string_view game_win
 					this->ClearScreen();
 
 					DrawString(100, 100, D3DCOLOR_ARGB(255, 0, 0, 0), this->Font, "drawing a string");
+					render::Line(this, 100, 100, 200, 100, Color(255, 255, 0, 255));
+					render::Rect(this, 100, 250, 200, 250, Color(255, 255, 0, 255));
+					render::RectFilled(this, 100, 400, 200, 400, Color(255, 255, 0, 255));
 
 					this->d3d_device->EndScene();
 					this->d3d_device->Present(NULL, NULL, NULL, NULL);
@@ -263,6 +269,13 @@ void overlay::StartRender(std::string_view to_draw_on, std::string_view game_win
 
 			}
 		}
+		if (GetAsyncKeyState(VK_HOME))
+		{
+			this->d3d_device->BeginScene();
+			this->ClearScreen();
+			this->d3d_device->EndScene();
+			break;
+		};
 
 		Sleep(1);
 	}

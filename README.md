@@ -17,6 +17,7 @@ game hacking.
 - Injection of DLL files (loadlibrary and manualmap, shellcode injection included with only flaw being hardcoded shellcode)
 - Logging system 
 - Overlay for drawing stuff (borderless/fullscreen windowed)
+- Simple rendering functions to use with overlay (line, rect, filled rect)
 - Some simplified function wrappers (mostly easy learning stuff for people like function pointers etc.)
 
 # Future updates
